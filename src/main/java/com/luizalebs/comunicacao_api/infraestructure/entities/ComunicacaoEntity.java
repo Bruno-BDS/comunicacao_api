@@ -28,7 +28,7 @@ public class ComunicacaoEntity implements Serializable {
     @Column(name = "NOME_DESTINATARIO", nullable = false)
     private String nomeDestinatario;
 
-    @Column(name = "EMAIL_DESTINATARIO", nullable = false, unique = true)
+    @Column(name = "EMAIL_DESTINATARIO", nullable = false)
     private String emailDestinatario;
 
     @Column(name = "TELEFONE_DESTINATARIO")
