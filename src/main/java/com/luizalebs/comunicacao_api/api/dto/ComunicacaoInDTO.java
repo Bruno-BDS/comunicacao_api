@@ -17,7 +17,7 @@ import java.util.Date;
 @ToString
 public class    ComunicacaoInDTO implements Serializable {
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private Date dataHoraEnvio;
     private String nomeDestinatario;
     private String emailDestinatario;

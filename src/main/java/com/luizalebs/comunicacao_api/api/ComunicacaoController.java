@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.swing.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/comunicacao")
@@ -38,6 +39,21 @@ public class ComunicacaoController {
     public ResponseEntity<ComunicacaoOutDTO> buscarStatus(@RequestParam String emailDestinatario) {
         return ResponseEntity.ok(service.buscarStatusComunicacao(emailDestinatario));
     }
+
+    @GetMapping("/historico")
+    @Operation(
+            summary = "Consulta o histórico",
+            description = "Consulta as comunicações realizadas"
+    )
+    public ResponseEntity<List<ComunicacaoOutDTO>> historico(
+            @RequestParam(required = false)
+            String emailDestinatario) {
+
+        return ResponseEntity.ok(
+                service.buscarHistorico(emailDestinatario)
+        );
+    }
+
 
     @PatchMapping("/cancelar")
     @Operation(summary = "Cancela o status por Email", description = "Cancela  o status da mensagem")

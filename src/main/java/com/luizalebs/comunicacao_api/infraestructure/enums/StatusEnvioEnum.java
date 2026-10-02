@@ -8,5 +8,6 @@ import lombok.Getter;
 public enum StatusEnvioEnum {
     PENDENTE,
     ENVIADO,
-    CANCELADO;
+    CANCELADO,
+    FALHA
 }
