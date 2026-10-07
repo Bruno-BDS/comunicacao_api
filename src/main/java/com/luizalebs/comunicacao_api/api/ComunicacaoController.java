@@ -56,7 +56,7 @@ public class ComunicacaoController {
 
 
     @PatchMapping("/cancelar")
-    @Operation(summary = "Cancela o status por Email", description = "Cancela  o status da mensagem")
+    @Operation(summary = "Muda o status por Email", description = "Muda o status para cancelado")
     @ApiResponse(responseCode = "200", description = "Cancelamento do status ok")
     @ApiResponse(responseCode = "500", description = "Erro no servidor")
     public ResponseEntity<ComunicacaoOutDTO> cancelarStatus(@RequestParam String emailDestinatario) {
