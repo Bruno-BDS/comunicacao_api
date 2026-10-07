@@ -25,6 +25,9 @@ public class ComunicacaoEntity implements Serializable {
     @Column(name = "HORA_ENVIO", nullable = false)
     private Date dataHoraenvio;
 
+    @Column(name = "NOME_TAREFA")
+    private String nomeTarefa;
+
     @Column(name = "NOME_DESTINATARIO", nullable = false)
     private String nomeDestinatario;
 

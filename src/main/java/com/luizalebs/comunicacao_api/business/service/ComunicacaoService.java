@@ -2,7 +2,7 @@ package com.luizalebs.comunicacao_api.business.service;
 
 import com.luizalebs.comunicacao_api.api.dto.ComunicacaoInDTO;
 import com.luizalebs.comunicacao_api.api.dto.ComunicacaoOutDTO;
-import com.luizalebs.comunicacao_api.business.converter.ComunicacaoConverter;
+import com.luizalebs.comunicacao_api.business.mapper.ComunicacaoMapper;
 import com.luizalebs.comunicacao_api.infraestructure.client.NotificacaoClient;
 import com.luizalebs.comunicacao_api.infraestructure.client.dto.NotificacaoEmailDTO;
 import com.luizalebs.comunicacao_api.infraestructure.entities.ComunicacaoEntity;
@@ -19,12 +19,12 @@ import java.util.stream.Collectors;
 public class ComunicacaoService {
 
     private final ComunicacaoRepository repository;
-    private final ComunicacaoConverter converter;
+    private final ComunicacaoMapper mapper;
     private final NotificacaoClient notificacaoClient;
 
-    public ComunicacaoService(ComunicacaoRepository repository, ComunicacaoConverter converter, NotificacaoClient notificacaoClient) {
+    public ComunicacaoService(ComunicacaoRepository repository, ComunicacaoMapper mapper, NotificacaoClient notificacaoClient) {
         this.repository = repository;
-        this.converter = converter;
+        this.mapper = mapper;
         this.notificacaoClient = notificacaoClient;
     }
 
@@ -33,22 +33,16 @@ public class ComunicacaoService {
             throw new RuntimeException();
         }
         dto.setStatusEnvio(StatusEnvioEnum.PENDENTE);
-        ComunicacaoEntity entity = converter.paraEntity(dto);
+        ComunicacaoEntity entity = mapper.paraComunicacaoEntity(dto);
         repository.save(entity);
         if (dto.getModoDeEnvio() == ModoEnvioEnum.EMAIL){
             try {
                 NotificacaoEmailDTO email = new NotificacaoEmailDTO();
-                email.setNomeTarefa(entity.getNomeDestinatario());
+                email.setNomeTarefa(entity.getNomeTarefa());
+                email.setNomeDestinatario(entity.getNomeDestinatario());
                 email.setDescricao(entity.getMensagem());
                 email.setEmailUsuario(entity.getEmailDestinatario());
-                email.setDataEvento(
-                        entity.getDataHoraenvio()
-                                .toInstant()
-                                .atZone(
-                                        java.time.ZoneId.systemDefault()
-                                )
-                                .toLocalDateTime()
-                );
+                email.setDataEvento(entity.getDataHoraenvio());
                 notificacaoClient.enviarEmail(email);
                 entity.setStatusEnvio(StatusEnvioEnum.ENVIADO);
             }catch (Exception e){
@@ -56,7 +50,7 @@ public class ComunicacaoService {
             }
             entity = repository.save(entity);
         }
-        return converter.paraDTO(entity);
+        return mapper.paraComunicacaoOutDTO(entity);
     }
 
     public ComunicacaoOutDTO buscarStatusComunicacao(String emailDestinatario) {
@@ -64,7 +58,7 @@ public class ComunicacaoService {
         if (Objects.isNull(entity)) {
             throw new RuntimeException();
         }
-        return converter.paraDTO(entity);
+        return mapper.paraComunicacaoOutDTO(entity);
     }
 
     public ComunicacaoOutDTO alterarStatusComunicacao(String emailDestinatario) {
@@ -74,7 +68,7 @@ public class ComunicacaoService {
         }
         entity.setStatusEnvio(StatusEnvioEnum.CANCELADO);
         repository.save(entity);
-        return (converter.paraDTO(entity));
+        return (mapper.paraComunicacaoOutDTO(entity));
     }
     public List<ComunicacaoOutDTO> buscarHistorico(
             String emailDestinatario) {
@@ -95,7 +89,7 @@ public class ComunicacaoService {
         }
 
         return lista.stream()
-                .map(converter::paraDTO)
+                .map(mapper::paraComunicacaoOutDTO)
                 .collect(Collectors.toList());
     }
 
