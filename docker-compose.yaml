@@ -1,0 +1,39 @@
+services:
+  comunicacao_api:
+    build: .
+    container_name: comunicacao_api
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/comunicacao1?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: "1234"
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+  notificacao:
+    build: ../notificacao
+    container_name: notificacao_
+    ports:
+      - "8082:8082"
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: comunicacao_sql
+    environment:
+      MYSQL_ROOT_PASSWORD: "1234"
+      MYSQL_DATABASE: comunicacao1
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  mysql_data:
+
+  
