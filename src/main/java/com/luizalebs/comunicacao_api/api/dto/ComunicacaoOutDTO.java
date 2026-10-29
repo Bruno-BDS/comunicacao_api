@@ -6,7 +6,7 @@ import com.luizalebs.comunicacao_api.infraestructure.enums.StatusEnvioEnum;
 import lombok.*;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -18,7 +18,7 @@ public class ComunicacaoOutDTO implements Serializable {
 
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
-    private Date dataHoraEnvio;
+    private LocalDateTime dataHoraEnvio;
     private String nomeTarefa;
     private String nomeDestinatario;
     private String emailDestinatario;

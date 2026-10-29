@@ -93,7 +93,7 @@ public class ComunicacaoService {
                             emailDestinatario
                     );
         }
-        if (lista.isEmpty() || lista == null) {
+        if (lista == null || lista.isEmpty()) {
             throw new RecursoNaoEncontradoException(
                     "Nenhum histórico encontrado para o email informado."
             );
