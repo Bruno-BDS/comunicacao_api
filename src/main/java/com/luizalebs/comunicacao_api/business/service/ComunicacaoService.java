@@ -2,12 +2,13 @@ package com.luizalebs.comunicacao_api.business.service;
 
 import com.luizalebs.comunicacao_api.api.dto.ComunicacaoInDTO;
 import com.luizalebs.comunicacao_api.api.dto.ComunicacaoOutDTO;
-import com.luizalebs.comunicacao_api.business.converter.ComunicacaoConverter;
+import com.luizalebs.comunicacao_api.business.mapper.ComunicacaoMapper;
 import com.luizalebs.comunicacao_api.infraestructure.client.NotificacaoClient;
 import com.luizalebs.comunicacao_api.infraestructure.client.dto.NotificacaoEmailDTO;
 import com.luizalebs.comunicacao_api.infraestructure.entities.ComunicacaoEntity;
 import com.luizalebs.comunicacao_api.infraestructure.enums.ModoEnvioEnum;
 import com.luizalebs.comunicacao_api.infraestructure.enums.StatusEnvioEnum;
+import com.luizalebs.comunicacao_api.infraestructure.exceptions.RecursoNaoEncontradoException;
 import com.luizalebs.comunicacao_api.infraestructure.repositories.ComunicacaoRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,63 +20,62 @@ import java.util.stream.Collectors;
 public class ComunicacaoService {
 
     private final ComunicacaoRepository repository;
-    private final ComunicacaoConverter converter;
+    private final ComunicacaoMapper mapper;
     private final NotificacaoClient notificacaoClient;
 
-    public ComunicacaoService(ComunicacaoRepository repository, ComunicacaoConverter converter, NotificacaoClient notificacaoClient) {
+    public ComunicacaoService(ComunicacaoRepository repository, ComunicacaoMapper mapper, NotificacaoClient notificacaoClient) {
         this.repository = repository;
-        this.converter = converter;
+        this.mapper = mapper;
         this.notificacaoClient = notificacaoClient;
     }
 
     public ComunicacaoOutDTO agendarComunicacao(ComunicacaoInDTO dto) {
         if (Objects.isNull(dto)) {
-            throw new RuntimeException();
+            throw new RecursoNaoEncontradoException(
+                    "Os dados estão nulos."
+            );
         }
         dto.setStatusEnvio(StatusEnvioEnum.PENDENTE);
-        ComunicacaoEntity entity = converter.paraEntity(dto);
+        ComunicacaoEntity entity = mapper.paraComunicacaoEntity(dto);
         repository.save(entity);
-        if (dto.getModoDeEnvio() == ModoEnvioEnum.EMAIL){
+        if (dto.getModoDeEnvio() == ModoEnvioEnum.EMAIL) {
             try {
                 NotificacaoEmailDTO email = new NotificacaoEmailDTO();
-                email.setNomeTarefa(entity.getNomeDestinatario());
+                email.setNomeTarefa(entity.getNomeTarefa());
+                email.setNomeDestinatario(entity.getNomeDestinatario());
                 email.setDescricao(entity.getMensagem());
                 email.setEmailUsuario(entity.getEmailDestinatario());
-                email.setDataEvento(
-                        entity.getDataHoraenvio()
-                                .toInstant()
-                                .atZone(
-                                        java.time.ZoneId.systemDefault()
-                                )
-                                .toLocalDateTime()
-                );
+                email.setDataEvento(entity.getDataHoraenvio());
                 notificacaoClient.enviarEmail(email);
                 entity.setStatusEnvio(StatusEnvioEnum.ENVIADO);
-            }catch (Exception e){
+            } catch (Exception e) {
                 entity.setStatusEnvio(StatusEnvioEnum.FALHA);
             }
             entity = repository.save(entity);
         }
-        return converter.paraDTO(entity);
+        return mapper.paraComunicacaoOutDTO(entity);
     }
 
     public ComunicacaoOutDTO buscarStatusComunicacao(String emailDestinatario) {
         ComunicacaoEntity entity = repository.findByEmailDestinatario(emailDestinatario);
         if (Objects.isNull(entity)) {
-            throw new RuntimeException();
+            throw new RecursoNaoEncontradoException(
+                    "Status não encontrado, email destinatario nulo."
+            );
         }
-        return converter.paraDTO(entity);
+        return mapper.paraComunicacaoOutDTO(entity);
     }
 
     public ComunicacaoOutDTO alterarStatusComunicacao(String emailDestinatario) {
         ComunicacaoEntity entity = repository.findByEmailDestinatario(emailDestinatario);
         if (Objects.isNull(entity)) {
-            throw new RuntimeException();
+            throw new RecursoNaoEncontradoException("Email não encontrado para a alteração de status.");
         }
         entity.setStatusEnvio(StatusEnvioEnum.CANCELADO);
         repository.save(entity);
-        return (converter.paraDTO(entity));
+        return (mapper.paraComunicacaoOutDTO(entity));
     }
+
     public List<ComunicacaoOutDTO> buscarHistorico(
             String emailDestinatario) {
 
@@ -93,9 +93,14 @@ public class ComunicacaoService {
                             emailDestinatario
                     );
         }
+        if (lista == null || lista.isEmpty()) {
+            throw new RecursoNaoEncontradoException(
+                    "Nenhum histórico encontrado para o email informado."
+            );
+        }
 
         return lista.stream()
-                .map(converter::paraDTO)
+                .map(mapper::paraComunicacaoOutDTO)
                 .collect(Collectors.toList());
     }
 

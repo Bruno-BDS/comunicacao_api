@@ -13,9 +13,10 @@ import java.time.LocalDateTime;
 @Builder
 public class NotificacaoEmailDTO {
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private String nomeTarefa;
     private String descricao;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
+    private String nomeDestinatario;
     private LocalDateTime dataEvento;
     private StatusEnvioEnum statusEnvio;
     private String mensagem;
